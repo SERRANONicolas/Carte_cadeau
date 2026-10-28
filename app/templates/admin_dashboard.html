@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Administration — Cartes cadeaux{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div style="display:flex; align-items:center;">
+    <h1>🎁 Demandes de cartes cadeaux</h1>
+    <nav class="admin-nav">
+      <a class="active" href="{{ url_for('admin_dashboard') }}">Demandes</a>
+      <a href="{{ url_for('admin_settings') }}">Paramètres</a>
+    </nav>
+  </div>
+  <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+    <a class="btn btn-gold" href="{{ url_for('admin_export') }}">⬇ Télécharger la liste (.xlsx)</a>
+    <a class="btn btn-outline" href="{{ url_for('admin_logout') }}">Déconnexion</a>
+  </div>
+</div>
+
+<div class="admin-content">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="flash {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">{{ total_demandes }}</div><div class="label">Salariés</div></div>
+    <div class="stat-card"><div class="num">{{ total_enfants }}</div><div class="label">Enfants</div></div>
+    <div class="stat-card"><div class="num">{{ total_communs }}</div><div class="label">Enfants en commun à vérifier</div></div>
+    {% for societe, count in par_societe.items() %}
+    <div class="stat-card"><div class="num">{{ count }}</div><div class="label">{{ societe }}</div></div>
+    {% endfor %}
+  </div>
+
+  {% if demandes %}
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Salarié</th>
+          <th>Société</th>
+          <th>Enfants</th>
+          <th>Enfant(s) en commun</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in demandes %}
+        <tr>
+          <td>{{ d.date_creation.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ d.nom_salarie }} {{ d.prenom_salarie }}</td>
+          <td>{{ d.societe }}</td>
+          <td>
+            <div class="participants-list">
+              {% for e in d.enfants %}
+              <div><strong>Enfant {{ e.rang }}</strong> — {{ e.nom_prenom }}</div>
+              {% else %}
+              <div style="color:#8a8a7d;">Aucun enfant déclaré</div>
+              {% endfor %}
+            </div>
+          </td>
+          <td>{% if d.enfant_commun %}<span class="tag">Oui</span>{% endif %}</td>
+          <td>
+            <a class="btn btn-danger" style="padding:.3rem .7rem; font-size:.72rem;"
+               href="{{ url_for('admin_delete', demande_id=d.id) }}"
+               onclick="return confirm('Supprimer la demande de {{ d.nom_salarie }} {{ d.prenom_salarie }} ?');">Supprimer</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">Aucune demande pour le moment.</div>
+  {% endif %}
+
+</div>
+{% endblock %}

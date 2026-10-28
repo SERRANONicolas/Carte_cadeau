@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.db
+*.sqlite3
+app/static/img/uploads/
+*.png
+*.jpg
+*.jpeg

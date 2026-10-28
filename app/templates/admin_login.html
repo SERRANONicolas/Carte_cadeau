@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Administration — Connexion{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block content %}
+<div class="admin-login-wrap christmas-bg {{ hero_bg_class }}" style="{{ hero_bg_style }}">
+  <div class="admin-login-card">
+    <h1>🎁 Administration</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="post">
+      <input type="text" name="username" placeholder="Identifiant" required autofocus>
+      <input type="password" name="password" placeholder="Mot de passe" required>
+      <button type="submit" class="submit-btn">Se connecter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

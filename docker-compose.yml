@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    image: cartes-cadeaux-app
+    container_name: cartes-cadeaux-app
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-changeme-en-production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+    volumes:
+      - data:/app/data
+    ports:
+      - "${APP_PORT:-8091}:5000"
+
+volumes:
+  data:

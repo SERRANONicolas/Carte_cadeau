@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Demande enregistrée{% endblock %}
+{% block content %}
+<div class="confirm-page christmas-bg {{ hero_bg_class }}" style="{{ hero_bg_style }}">
+  <div class="confirm-card">
+    <div class="icon">🎁</div>
+    <h1>Merci {{ prenom_salarie }} !</h1>
+    <p>Votre demande de carte cadeau a bien été enregistrée.<br>
+    Vous serez informé(e) prochainement des modalités de remise.</p>
+    <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+  </div>
+</div>
+{% endblock %}

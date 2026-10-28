@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Carte cadeau — Demande{% endblock %}
+{% block content %}
+
+<section class="hero christmas-bg {{ hero_bg_class }}" style="{{ hero_bg_style }}">
+  <div class="hero-inner">
+    <p class="eyebrow">Pour les enfants du personnel</p>
+    <h1 class="hero-title">Carte cadeau</h1>
+    {% if deadline_full %}
+    <div class="hero-deadline">
+      {% if is_closed %}
+        Demandes closes depuis le <strong>{{ deadline_full }}</strong>
+      {% else %}
+        Demande à effectuer avant le <strong>{{ deadline_full }}</strong>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="form-section">
+  <div class="form-wrap">
+    <h2>Demande de carte cadeau</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if is_closed %}
+    <div class="closed-card">
+      <div class="closed-icon">🎁</div>
+      <h3>Les demandes sont closes</h3>
+      <p>La date limite ({{ deadline_full }}) est dépassée.<br>
+      Merci de contacter directement le CSE pour toute question.</p>
+    </div>
+    {% else %}
+    <p class="form-sub">Merci de compléter le formulaire ci-dessous.
+      {% if deadline_full %}<br>Date limite de demande : {{ deadline_full }}.{% endif %}</p>
+
+    <form method="post" action="{{ url_for('demande') }}" novalidate>
+
+      <div class="card">
+        <div class="field">
+          <label class="field-label">Choix Société</label>
+          <div class="radio-group">
+            {% for s in societes %}
+            <label class="radio-pill">
+              <input type="radio" name="societe" value="{{ s }}" required
+                {% if form and form.societe == s %}checked{% endif %}>
+              <span>{{ s }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="nom_salarie">Nom du salarié</label>
+          <input type="text" id="nom_salarie" name="nom_salarie" required
+                 value="{{ form.nom_salarie if form else '' }}">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="prenom_salarie">Prénom du salarié</label>
+          <input type="text" id="prenom_salarie" name="prenom_salarie" required
+                 value="{{ form.prenom_salarie if form else '' }}">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">Enfants nés après le {{ enfants_nes_apres }}</h3>
+        <p class="section-hint">Indiquez le nom &amp; prénom de chaque enfant concerné (laissez vide si non concerné).</p>
+        {% for rang in rangs %}
+        <div class="person-row">
+          <span class="role-label">Enfant {{ rang }}</span>
+          <input type="text" name="enfant_{{ rang }}" placeholder="Nom et prénom"
+                 value="{{ form.get('enfant_' ~ rang, '') if form else '' }}">
+        </div>
+        {% endfor %}
+
+        <div class="field" style="margin-top:1.2rem;">
+          <label class="radio-pill">
+            <input type="checkbox" name="enfant_commun"
+              {% if form and form.get('enfant_commun') %}checked{% endif %}>
+            <span>Je coche cette case si j'ai un ou plusieurs enfants en commun avec un autre salarié de l'entreprise</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Envoyer ma demande</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

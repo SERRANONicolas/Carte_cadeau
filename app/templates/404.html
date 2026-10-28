@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Page introuvable{% endblock %}
+{% block content %}
+<div class="confirm-page christmas-bg {{ hero_bg_class }}" style="{{ hero_bg_style }}">
+  <div class="confirm-card">
+    <div class="icon">🎁</div>
+    <h1>Page introuvable</h1>
+    <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Administration — Paramètres{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block content %}
+
+<div class="admin-topbar">
+  <div style="display:flex; align-items:center;">
+    <h1>🎁 Paramètres</h1>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin_dashboard') }}">Demandes</a>
+      <a class="active" href="{{ url_for('admin_settings') }}">Paramètres</a>
+    </nav>
+  </div>
+  <div style="display:flex; gap:.6rem; flex-wrap:wrap;">
+    <a class="btn btn-outline" href="{{ url_for('admin_logout') }}">Déconnexion</a>
+  </div>
+</div>
+
+<div class="admin-content">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, msg in messages %}
+        <div class="flash {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="settings-grid">
+
+    <div class="settings-card">
+      <h2>Informations générales</h2>
+      <p class="settings-hint">Date limite de demande et date de naissance minimale des enfants éligibles. Passé la date limite, le formulaire public devient indisponible.</p>
+      <form method="post" action="{{ url_for('admin_settings_general') }}">
+        <div class="settings-form-row">
+          <div class="settings-field">
+            <label for="enfants_nes_apres">Enfants nés à partir du</label>
+            <input type="date" id="enfants_nes_apres" name="enfants_nes_apres" value="{{ settings.enfants_nes_apres.isoformat() }}" required>
+          </div>
+          <div class="settings-field">
+            <label for="deadline_date">Date limite de demande</label>
+            <input type="date" id="deadline_date" name="deadline_date"
+                   value="{{ settings.deadline_date.isoformat() if settings.deadline_date else '' }}">
+            <p class="field-note">Laissez vide pour ne fixer aucune limite.</p>
+          </div>
+        </div>
+        <button type="submit" class="settings-save">Enregistrer</button>
+      </form>
+    </div>
+
+    <div class="settings-card">
+      <h2>Image de fond — Desktop</h2>
+      <p class="settings-hint">
+        Remplace le fond généré par une photo de votre choix (page de demande, page de confirmation et écran de connexion admin). Utilisée sur les écrans larges (≥ 641px).<br>
+        <strong>Résolution idéale à respecter : {{ hero_image_ideal_resolution }}.</strong>
+        L'image est automatiquement recadrée pour remplir l'écran (mode « cover ») : évitez les éléments importants près des bords.
+        Formats acceptés : JPG, PNG, WEBP — 8 Mo maximum.
+      </p>
+
+      {% if settings.hero_image_filename %}
+      <div class="hero-preview">
+        <img src="{{ url_for('media_hero_image') }}?v={{ settings.hero_image_filename }}" alt="Image de fond desktop actuelle">
+      </div>
+      <form method="post" action="{{ url_for('admin_settings_hero_image') }}" style="margin-top:.8rem;">
+        <input type="hidden" name="action" value="remove">
+        <button type="submit" class="btn btn-danger" style="border-radius:6px; padding:.55rem 1.1rem;">Supprimer et revenir au fond généré</button>
+      </form>
+      <hr style="border:none; border-top:1px solid #e5ddc9; margin:1.4rem 0;">
+      {% endif %}
+
+      <form method="post" action="{{ url_for('admin_settings_hero_image') }}" enctype="multipart/form-data">
+        <div class="settings-field" style="margin-bottom:1rem;">
+          <label for="hero_image">{{ 'Remplacer par une nouvelle image' if settings.hero_image_filename else 'Choisir une image' }}</label>
+          <input type="file" id="hero_image" name="image" accept=".jpg,.jpeg,.png,.webp">
+        </div>
+        <button type="submit" class="settings-save">Mettre en ligne</button>
+      </form>
+    </div>
+
+    <div class="settings-card">
+      <h2>Image de fond — Mobile</h2>
+      <p class="settings-hint">
+        Facultatif. Une image dédiée, recadrée à la main pour les écrans étroits (&lt; 641px : téléphones). Sans elle, l'image desktop est simplement réutilisée (et parfois mal cadrée en portrait).<br>
+        <strong>Résolution idéale à respecter : {{ hero_image_mobile_ideal_resolution }}.</strong>
+        Formats acceptés : JPG, PNG, WEBP — 8 Mo maximum.
+      </p>
+
+      {% if settings.hero_image_mobile_filename %}
+      <div class="hero-preview hero-preview-mobile">
+        <img src="{{ url_for('media_hero_image_mobile') }}?v={{ settings.hero_image_mobile_filename }}" alt="Image de fond mobile actuelle">
+      </div>
+      <form method="post" action="{{ url_for('admin_settings_hero_image_mobile') }}" style="margin-top:.8rem;">
+        <input type="hidden" name="action" value="remove">
+        <button type="submit" class="btn btn-danger" style="border-radius:6px; padding:.55rem 1.1rem;">Supprimer l'image mobile</button>
+      </form>
+      <hr style="border:none; border-top:1px solid #e5ddc9; margin:1.4rem 0;">
+      {% endif %}
+
+      <form method="post" action="{{ url_for('admin_settings_hero_image_mobile') }}" enctype="multipart/form-data">
+        <div class="settings-field" style="margin-bottom:1rem;">
+          <label for="hero_image_mobile">{{ 'Remplacer par une nouvelle image' if settings.hero_image_mobile_filename else 'Choisir une image' }}</label>
+          <input type="file" id="hero_image_mobile" name="image" accept=".jpg,.jpeg,.png,.webp">
+        </div>
+        <button type="submit" class="settings-save">Mettre en ligne</button>
+      </form>
+    </div>
+
+    <div class="settings-card danger-card">
+      <h2 class="danger-title">Zone dangereuse</h2>
+      <p class="settings-hint">
+        Réinitialise la base pour repartir sur une nouvelle campagne.
+        <strong>Supprime définitivement les {{ total_inscriptions }} demande(s) actuellement enregistrée(s)</strong> et leurs enfants.
+        Les paramètres (date limite, images) ne sont pas touchés.
+        Pensez à télécharger l'export .xlsx avant de continuer, cette action est irréversible.
+      </p>
+      <form method="post" action="{{ url_for('admin_reset_demandes') }}"
+            onsubmit="return confirm('Supprimer définitivement les {{ total_inscriptions }} demande(s) ? Cette action est irréversible.');">
+        <div class="settings-field" style="max-width:280px; margin-bottom:1rem;">
+          <label for="confirm">Tapez RAZ pour confirmer</label>
+          <input type="text" id="confirm" name="confirm" placeholder="RAZ" autocomplete="off" required>
+        </div>
+        <button type="submit" class="btn btn-danger" style="border-radius:999px; padding:.65rem 1.4rem; font-family:'Oswald',sans-serif; font-weight:600; font-size:.82rem; letter-spacing:.04em; text-transform:uppercase; border:none; cursor:pointer;">
+          Réinitialiser les demandes
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  document.querySelectorAll('.btn-add').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.dataset.target);
+      var tpl = document.getElementById(btn.dataset.template);
+      target.appendChild(tpl.content.cloneNode(true));
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dyn-row-remove')) {
+      var row = e.target.closest('.dyn-row');
+      var container = row.parentElement;
+      if (container.children.length > 1) {
+        row.remove();
+      } else {
+        row.querySelectorAll('input[type="text"]').forEach(function (i) { i.value = ''; });
+      }
+    }
+  });
+})();
+</script>
+
+{% endblock %}
