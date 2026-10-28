@@ -12,6 +12,7 @@ class Config:
 
     # Valeurs de départ, seedées en base au premier démarrage puis modifiables depuis /admin/settings
     DEFAULT_DEADLINE_DATE = None
+    DEFAULT_ANNEE = 2026
     DEFAULT_ENFANTS_NES_APRES = date(2014, 1, 1)
 
     UPLOAD_DIR = "/app/data/uploads"

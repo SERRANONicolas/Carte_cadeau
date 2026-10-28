@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Carte cadeau — Demande{% endblock %}
+{% block title %}Carte Cadeau CSE Noël {{ annee }} — Demande{% endblock %}
 {% block content %}
 
 <section class="hero christmas-bg {{ hero_bg_class }}" style="{{ hero_bg_style }}">
   <div class="hero-inner">
     <p class="eyebrow">Pour les enfants du personnel</p>
-    <h1 class="hero-title">Carte cadeau</h1>
+    <h1 class="hero-title">Carte Cadeau CSE Noël {{ annee }}</h1>
     {% if deadline_full %}
     <div class="hero-deadline">
       {% if is_closed %}

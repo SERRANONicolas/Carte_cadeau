@@ -34,6 +34,11 @@
       <form method="post" action="{{ url_for('admin_settings_general') }}">
         <div class="settings-form-row">
           <div class="settings-field">
+            <label for="annee">Année affichée dans le titre</label>
+            <input type="number" id="annee" name="annee" min="2000" max="2100" value="{{ settings.annee }}" required>
+            <p class="field-note">Titre : « Carte Cadeau CSE Noël {{ settings.annee }} ».</p>
+          </div>
+          <div class="settings-field">
             <label for="enfants_nes_apres">Enfants nés à partir du</label>
             <input type="date" id="enfants_nes_apres" name="enfants_nes_apres" value="{{ settings.enfants_nes_apres.isoformat() }}" required>
           </div>

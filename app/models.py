@@ -46,5 +46,6 @@ class Settings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     deadline_date = db.Column(db.Date, nullable=True)
     enfants_nes_apres = db.Column(db.Date, nullable=False)
+    annee = db.Column(db.Integer, nullable=False, default=2026)
     hero_image_filename = db.Column(db.String(255), nullable=True)
     hero_image_mobile_filename = db.Column(db.String(255), nullable=True)

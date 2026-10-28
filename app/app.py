@@ -67,9 +67,16 @@ def _ensure_admin_user():
 
 
 def _ensure_settings():
+    # Migration légère : ajoute la colonne `annee` sur une base existante
+    cols = [r[1] for r in db.session.execute(db.text("PRAGMA table_info(settings)"))]
+    if cols and "annee" not in cols:
+        db.session.execute(db.text(
+            f"ALTER TABLE settings ADD COLUMN annee INTEGER NOT NULL DEFAULT {int(Config.DEFAULT_ANNEE)}"))
+        db.session.commit()
     if db.session.get(Settings, 1) is None:
         db.session.add(Settings(
             id=1,
+            annee=Config.DEFAULT_ANNEE,
             deadline_date=Config.DEFAULT_DEADLINE_DATE,
             enfants_nes_apres=Config.DEFAULT_ENFANTS_NES_APRES,
         ))
@@ -94,6 +101,7 @@ def _is_closed(settings):
 
 def _public_context(settings, form=None):
     return dict(
+        annee=settings.annee,
         societes=SOCIETES,
         rangs=range(1, MAX_ENFANTS + 1),
         enfants_nes_apres=date_fr_numeric(settings.enfants_nes_apres),
@@ -322,6 +330,13 @@ def register_routes(app):
         deadline_raw = request.form.get("deadline_date") or ""
 
         errors = []
+        try:
+            annee = int(request.form.get("annee") or "")
+            if not 2000 <= annee <= 2100:
+                raise ValueError
+            settings.annee = annee
+        except ValueError:
+            errors.append("Année invalide.")
         try:
             settings.enfants_nes_apres = date.fromisoformat(nes_apres_raw)
         except ValueError:
