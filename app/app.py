@@ -151,9 +151,6 @@ def register_routes(app):
             if nom_prenom:
                 enfants.append((rang, nom_prenom))
 
-        if not enfants:
-            errors.append("Merci de renseigner au moins un enfant.")
-
         if errors:
             for e in errors:
                 flash(e, "error")
