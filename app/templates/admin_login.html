@@ -13,6 +13,7 @@
       {% endif %}
     {% endwith %}
     <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="text" name="username" placeholder="Identifiant" required autofocus>
       <input type="password" name="password" placeholder="Mot de passe" required>
       <button type="submit" class="submit-btn">Se connecter</button>

@@ -66,9 +66,12 @@
           </td>
           <td>{% if d.enfant_commun %}<span class="tag">Oui</span>{% endif %}</td>
           <td>
-            <a class="btn btn-danger" style="padding:.3rem .7rem; font-size:.72rem;"
-               href="{{ url_for('admin_delete', demande_id=d.id) }}"
-               onclick="return confirm('Supprimer la demande de {{ d.nom_salarie }} {{ d.prenom_salarie }} ?');">Supprimer</a>
+            <form method="post" action="{{ url_for('admin_delete', demande_id=d.id) }}" style="display:inline;"
+                  data-confirm="Supprimer la demande de {{ d.nom_salarie }} {{ d.prenom_salarie }} ?"
+                  onsubmit="return confirm(this.dataset.confirm);">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger" style="padding:.3rem .7rem; font-size:.72rem;">Supprimer</button>
+            </form>
           </td>
         </tr>
         {% endfor %}

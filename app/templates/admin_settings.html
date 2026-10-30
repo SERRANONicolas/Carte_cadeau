@@ -32,6 +32,7 @@
       <h2>Informations générales</h2>
       <p class="settings-hint">Date limite de demande et date de naissance minimale des enfants éligibles. Passé la date limite, le formulaire public devient indisponible.</p>
       <form method="post" action="{{ url_for('admin_settings_general') }}">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="settings-form-row">
           <div class="settings-field">
             <label for="annee">Année affichée dans le titre</label>
@@ -67,6 +68,7 @@
         <img src="{{ url_for('media_hero_image') }}?v={{ settings.hero_image_filename }}" alt="Image de fond desktop actuelle">
       </div>
       <form method="post" action="{{ url_for('admin_settings_hero_image') }}" style="margin-top:.8rem;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="remove">
         <button type="submit" class="btn btn-danger" style="border-radius:6px; padding:.55rem 1.1rem;">Supprimer et revenir au fond généré</button>
       </form>
@@ -74,6 +76,7 @@
       {% endif %}
 
       <form method="post" action="{{ url_for('admin_settings_hero_image') }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="settings-field" style="margin-bottom:1rem;">
           <label for="hero_image">{{ 'Remplacer par une nouvelle image' if settings.hero_image_filename else 'Choisir une image' }}</label>
           <input type="file" id="hero_image" name="image" accept=".jpg,.jpeg,.png,.webp">
@@ -95,6 +98,7 @@
         <img src="{{ url_for('media_hero_image_mobile') }}?v={{ settings.hero_image_mobile_filename }}" alt="Image de fond mobile actuelle">
       </div>
       <form method="post" action="{{ url_for('admin_settings_hero_image_mobile') }}" style="margin-top:.8rem;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="remove">
         <button type="submit" class="btn btn-danger" style="border-radius:6px; padding:.55rem 1.1rem;">Supprimer l'image mobile</button>
       </form>
@@ -102,6 +106,7 @@
       {% endif %}
 
       <form method="post" action="{{ url_for('admin_settings_hero_image_mobile') }}" enctype="multipart/form-data">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="settings-field" style="margin-bottom:1rem;">
           <label for="hero_image_mobile">{{ 'Remplacer par une nouvelle image' if settings.hero_image_mobile_filename else 'Choisir une image' }}</label>
           <input type="file" id="hero_image_mobile" name="image" accept=".jpg,.jpeg,.png,.webp">
@@ -120,6 +125,7 @@
       </p>
       <form method="post" action="{{ url_for('admin_reset_demandes') }}"
             onsubmit="return confirm('Supprimer définitivement les {{ total_inscriptions }} demande(s) ? Cette action est irréversible.');">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="settings-field" style="max-width:280px; margin-bottom:1rem;">
           <label for="confirm">Tapez RAZ pour confirmer</label>
           <input type="text" id="confirm" name="confirm" placeholder="RAZ" autocomplete="off" required>

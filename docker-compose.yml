@@ -8,6 +8,10 @@ services:
       SECRET_KEY: ${SECRET_KEY:-changeme-en-production}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
       - data:/app/data
     ports:

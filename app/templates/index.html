@@ -42,6 +42,7 @@
       {% if deadline_full %}<br>Date limite de demande : {{ deadline_full }}.{% endif %}</p>
 
     <form method="post" action="{{ url_for('demande') }}" novalidate>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="card">
         <div class="field">

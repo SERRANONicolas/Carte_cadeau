@@ -3,11 +3,16 @@ import os
 from datetime import date, datetime
 from functools import wraps
 
+from urllib.parse import urlparse
+
 from flask import (
     Flask, render_template, request, redirect, url_for,
     session, flash, send_file, abort
 )
-from sqlalchemy import inspect, text
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -19,10 +24,17 @@ from models import (
 )
 
 
+csrf = CSRFProtect()
+limiter = Limiter(key_func=get_remote_address, default_limits=[], storage_uri="memory://")
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     db.init_app(app)
+    csrf.init_app(app)
+    limiter.init_app(app)
 
     os.makedirs(Config.UPLOAD_DIR, exist_ok=True)
 
@@ -32,6 +44,17 @@ def create_app():
         _ensure_settings()
 
     register_routes(app)
+
+    @app.after_request
+    def security_headers(resp):
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "same-origin")
+        resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
+        if request.path.startswith("/admin"):
+            resp.headers["Cache-Control"] = "no-store"
+        return resp
 
     @app.context_processor
     def inject_hero_image():
@@ -124,6 +147,7 @@ def register_routes(app):
         return render_template("index.html", **_public_context(settings))
 
     @app.post("/demande")
+    @limiter.limit("20 per hour")
     def demande():
         settings = db.session.get(Settings, 1)
 
@@ -138,6 +162,8 @@ def register_routes(app):
         enfant_commun = request.form.get("enfant_commun") == "on"
 
         errors = []
+        if len(nom) > 100 or len(prenom) > 100:
+            errors.append("Nom ou prénom trop long.")
         if societe not in SOCIETES:
             errors.append("Merci de sélectionner votre société.")
         if not nom:
@@ -149,6 +175,8 @@ def register_routes(app):
         for rang in range(1, MAX_ENFANTS + 1):
             nom_prenom = (request.form.get(f"enfant_{rang}") or "").strip()
             if nom_prenom:
+                if len(nom_prenom) > 200:
+                    errors.append("Nom d'enfant trop long.")
                 enfants.append((rang, nom_prenom))
 
         if errors:
@@ -177,6 +205,7 @@ def register_routes(app):
         return redirect(url_for("admin_dashboard"))
 
     @app.route("/admin/login", methods=["GET", "POST"])
+    @limiter.limit("10 per 15 minutes", methods=["POST"])
     def admin_login():
         if request.method == "POST":
             username = (request.form.get("username") or "").strip()
@@ -186,7 +215,9 @@ def register_routes(app):
                 session.clear()
                 session["admin_id"] = admin.id
                 session.permanent = True
-                next_url = request.args.get("next") or url_for("admin_dashboard")
+                next_url = request.args.get("next") or ""
+                if not next_url.startswith("/") or next_url.startswith("//") or urlparse(next_url).netloc:
+                    next_url = url_for("admin_dashboard")
                 return redirect(next_url)
             flash("Identifiants incorrects.", "error")
         return render_template("admin_login.html", show_snow=False)
@@ -212,7 +243,7 @@ def register_routes(app):
             par_societe=par_societe,
         )
 
-    @app.get("/admin/demandes/<int:demande_id>/delete")
+    @app.post("/admin/demandes/<int:demande_id>/delete")
     @login_required
     def admin_delete(demande_id):
         d = db.get_or_404(Demande, demande_id)
